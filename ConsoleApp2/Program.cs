@@ -21,6 +21,7 @@ namespace ConsoleApp2
             StringBuilder sbFileRemoveSpaces = new StringBuilder();
             String[] columns = null;
             string line = "";
+            //object[] columnNames = null;
             StreamReader sr = null;
             Stream stream = null;
             DirectoryInfo dir = new DirectoryInfo(@"c:\test\metadata");
@@ -47,14 +48,17 @@ namespace ConsoleApp2
 
                             if (line.StartsWith("SourcePath"))
                             {
+                                if(!dt.Columns.Contains(s))
+                                    dt.Columns.Add(s);
+                                else
+                                    if (!dt.Columns.Contains(s+i.ToString()))
+                                        dt.Columns.Add(s+i.ToString());
 
 
                                 if (!headers.Contains(s))
                                 {
                                     headers.Enqueue(s);
-
-                                    dt.Columns.Add(s);
-
+                                
                                     sb.Append(s);
                                     sb.Append(@"
 ");
@@ -63,8 +67,8 @@ namespace ConsoleApp2
 
                             else
                             {
-                                if(i<dt.Columns.Count)
-                                    dt.Rows[dt.Rows.Count-1][i] = s;
+                                if (i < dt.Columns.Count )
+                                    dt.Rows[dt.Rows.Count - 1][i] = s;//dt.Columns[i].ColumnName
                             }
 
                             i++;
