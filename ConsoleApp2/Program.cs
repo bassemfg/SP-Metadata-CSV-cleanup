@@ -14,7 +14,8 @@ namespace ConsoleApp2
         static void Main(string[] args)
         {
             int i = 0;
-            DataTable dt = new DataTable("Metadata");
+            DataTable dt = null;
+            DataTable dtMerged = new DataTable("Metadata");
             DataRow dr = null;
             Queue headers = new Queue();
             StringBuilder sb = new StringBuilder();
@@ -25,6 +26,7 @@ namespace ConsoleApp2
             StreamReader sr = null;
             Stream stream = null;
             DirectoryInfo dir = new DirectoryInfo(@"c:\test\metadata");
+
             foreach (FileInfo f in dir.GetFiles())
             {
                 stream = f.OpenText().BaseStream;
@@ -34,7 +36,13 @@ namespace ConsoleApp2
                     line = sr.ReadLine();
                     if (!line.StartsWith("SourcePath"))
                         dt.Rows.Add(dt.NewRow());
-                            
+                    else
+                    {
+                        if (dt!=null)
+                            dtMerged.Merge(dt, true, MissingSchemaAction.Add);
+
+                        dt = new DataTable();
+                    }
                     if (line.Trim().Length > 0)
                     {
 
@@ -73,8 +81,10 @@ namespace ConsoleApp2
 
                             i++;
                         }
+
                     }
                 }
+
                 stream.Close();
                 sr.BaseStream.Close();
 
@@ -87,13 +97,13 @@ namespace ConsoleApp2
             sw.Write(sb.ToString());
             sw.Flush();
             sw.Close();
-
+/*
             sw = new StreamWriter(@"c:\test\allmetadata.csv");
             sw.Write(sbFileRemoveSpaces.ToString());
             sw.Flush();
             sw.Close();
-
-            dt.WriteXml(@"c:\test\allmetadata.xml");
+            */
+            dtMerged.WriteXml(@"c:\test\allmetadata.xml");
 
         }
     }
