@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections;
+using System.Data;
 
 namespace ConsoleApp2
 {
@@ -12,7 +13,9 @@ namespace ConsoleApp2
     {
         static void Main(string[] args)
         {
-
+            int i = 0;
+            DataTable dt = new DataTable("Metadata");
+            DataRow dr = null;
             Queue headers = new Queue();
             StringBuilder sb = new StringBuilder();
             StringBuilder sbFileRemoveSpaces = new StringBuilder();
@@ -28,24 +31,43 @@ namespace ConsoleApp2
                 while (sr.Peek() >= 0)
                 {
                     line = sr.ReadLine();
+                    if (!line.StartsWith("SourcePath"))
+                        dt.Rows.Add(dt.NewRow());
+                            
                     if (line.Trim().Length > 0)
                     {
+
                         sbFileRemoveSpaces.Append(line);
                         sbFileRemoveSpaces.Append(@"
 ");
-                    }
-                    if (line.StartsWith("SourcePath"))
-                    {
                         columns = line.Split(',');
+                        i = 0;
                         foreach (string s in columns)
                         {
-                            if (!headers.Contains(s))
+
+                            if (line.StartsWith("SourcePath"))
                             {
-                                headers.Enqueue(s);
-                                sb.Append(s);
-                                sb.Append(@"
+
+
+                                if (!headers.Contains(s))
+                                {
+                                    headers.Enqueue(s);
+
+                                    dt.Columns.Add(s);
+
+                                    sb.Append(s);
+                                    sb.Append(@"
 ");
+                                }
                             }
+
+                            else
+                            {
+                                if(i<dt.Columns.Count)
+                                    dt.Rows[dt.Rows.Count-1][i] = s;
+                            }
+
+                            i++;
                         }
                     }
                 }
@@ -66,6 +88,8 @@ namespace ConsoleApp2
             sw.Write(sbFileRemoveSpaces.ToString());
             sw.Flush();
             sw.Close();
+
+            dt.WriteXml(@"c:\test\allmetadata.xml");
 
         }
     }
