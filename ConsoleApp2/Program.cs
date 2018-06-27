@@ -17,6 +17,7 @@ namespace ConsoleApp2
             DataTable dt = null;
             DataTable dtMerged = new DataTable("Metadata");
             DataRow dr = null;
+            Hashtable ht = null;
             Queue headers = new Queue();
             StringBuilder sb = new StringBuilder();
             StringBuilder sbFileRemoveSpaces = new StringBuilder();
@@ -33,14 +34,17 @@ namespace ConsoleApp2
                 sr = new StreamReader(stream);
                 while (sr.Peek() >= 0)
                 {
+                    //read a line in the CSV file
                     line = sr.ReadLine();
+                    // if it is not a header, i.e not start of a new table, add a new row to target
                     if (!line.StartsWith("SourcePath"))
                         dt.Rows.Add(dt.NewRow());
-                    else
+                    else //if it is a header i.e. start of new table
                     {
-                        if (dt!=null)
+                        // merge with existing table, if it exists
+                        if (dt != null)
                             dtMerged.Merge(dt, true, MissingSchemaAction.Add);
-
+                        ht = new Hashtable();
                         dt = new DataTable();
                     }
                     if (line.Trim().Length > 0)
@@ -51,19 +55,28 @@ namespace ConsoleApp2
 ");
                         columns = line.Split(',');
                         i = 0;
+                        
                         foreach (string s in columns)
                         {
 
                             if (line.StartsWith("SourcePath"))
                             {
-                                if(!dt.Columns.Contains(s))
+                                if (dt.Columns.Contains(s) == false)
+                                {
                                     dt.Columns.Add(s);
-                                else
-                                    if (!dt.Columns.Contains(s+i.ToString()))
-                                        dt.Columns.Add(s+i.ToString());
+                                    ht.Add( i,s);
+                                }
+                                else // to solve the problem of columns with same name
+                                {
+                                    if (dt.Columns.Contains(s + i.ToString()) == false)
+                                    {
+                                        dt.Columns.Add(s + i.ToString());
+                                        ht.Add( i, s + i.ToString());
+                                    }
+                                }
 
 
-                                if (!headers.Contains(s))
+                                if (headers.Contains(s)==false)
                                 {
                                     headers.Enqueue(s);
                                 
@@ -76,7 +89,7 @@ namespace ConsoleApp2
                             else
                             {
                                 if (i < dt.Columns.Count )
-                                    dt.Rows[dt.Rows.Count - 1][i] = s;//dt.Columns[i].ColumnName
+                                    dt.Rows[dt.Rows.Count - 1][ht[i].ToString()] = s;//dt.Columns[i].ColumnName
                             }
 
                             i++;
