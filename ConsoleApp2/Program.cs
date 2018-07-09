@@ -15,6 +15,7 @@ namespace ConsoleApp2
         {
 
             int i = 0;
+            string Val = "";
             DataTable dt = null;
             DataTable dtMerged = new DataTable("Metadata");
             DataRow dr = null;
@@ -91,8 +92,12 @@ namespace ConsoleApp2
 
                             else
                             {
+                                Val = s;
+                                if (s.IndexOf('#') > 0)
+                                    Val = s.Substring(1 + s.IndexOf('#'));
+
                                 if (i < dt.Columns.Count)
-                                    dt.Rows[dt.Rows.Count - 1][ht[i].ToString()] = s;//dt.Columns[i].ColumnName
+                                    dt.Rows[dt.Rows.Count - 1][ht[i].ToString()] = Val;//dt.Columns[i].ColumnName
                             }
 
                             i++;
