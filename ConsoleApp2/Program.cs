@@ -96,7 +96,7 @@ namespace ConsoleApp2
                                 if (s.IndexOf('#') > 0)
                                     Val = s.Substring(1 + s.IndexOf('#'));
 
-                                if (i < dt.Columns.Count)
+                                if (i < dt.Columns.Count && !string.IsNullOrEmpty(ht[i].ToString()))
                                     dt.Rows[dt.Rows.Count - 1][ht[i].ToString()] = Val;//dt.Columns[i].ColumnName
                             }
 
