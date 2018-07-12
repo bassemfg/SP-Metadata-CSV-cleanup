@@ -40,6 +40,7 @@ namespace ConsoleApp2
                     line = sr.ReadLine();
                     if (line.Trim().Length > 0)
                     {
+                        line = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(line));
                         // if it is not a header, i.e not start of a new table, add a new row to target
                         if (!line.StartsWith("SourcePath"))
                             dt.Rows.Add(dt.NewRow());
