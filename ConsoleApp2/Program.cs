@@ -28,10 +28,11 @@ namespace ConsoleApp2
             //object[] columnNames = null;
             StreamReader sr = null;
             Stream stream = null;
-            DirectoryInfo dir = new DirectoryInfo(@"c:\test\metadata");
+            DirectoryInfo dir = new DirectoryInfo(@"C:\test\SIG\new_csv_files\logs");
 
             foreach (FileInfo f in dir.GetFiles())
             {
+                Console.WriteLine("processing file " + f.Name);
                 stream = f.OpenText().BaseStream;
                 sr = new StreamReader(stream);
                 while (sr.Peek() >= 0)
@@ -43,7 +44,11 @@ namespace ConsoleApp2
                         line = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(line));
                         // if it is not a header, i.e not start of a new table, add a new row to target
                         if (!line.StartsWith("SourcePath"))
+                        {
+                            if (dt == null)
+                                dt = new DataTable();
                             dt.Rows.Add(dt.NewRow());
+                        }
                         else //if it is a header i.e. start of new table
                         {
                             // merge with existing table, if it exists
@@ -51,6 +56,7 @@ namespace ConsoleApp2
                                 dtMerged.Merge(dt, true, MissingSchemaAction.Add);
                             ht = new Hashtable();
                             dt = new DataTable();
+
 
                         }
 
@@ -115,7 +121,7 @@ namespace ConsoleApp2
 ");
             }
 
-            StreamWriter sw = new StreamWriter(@"c:\test\columns.txt");
+            StreamWriter sw = new StreamWriter(@"C:\test\SIG\new_csv_files\logs\columns.txt");
             sw.Write(sb.ToString());
             sw.Flush();
             sw.Close();
@@ -125,7 +131,41 @@ namespace ConsoleApp2
                         sw.Flush();
                         sw.Close();
                         */
-            dtMerged.WriteXml(@"c:\test\allmetadata.xml");
+            //dtMerged.WriteXml(@"C:\test\SIG\new_csv_files\logs\allmetadata.xml");
+            Console.WriteLine("writing results file ");
+            StringBuilder sbFinalData = new StringBuilder();
+            for (int colIdx = 0; colIdx < dtMerged.Columns.Count; colIdx++)
+            {
+                sbFinalData.Append("");
+                sbFinalData.Append(dtMerged.Columns[colIdx].ColumnName);
+                if (colIdx < dtMerged.Columns.Count - 1)
+                    sbFinalData.Append(",");
+            }
+
+            sbFinalData.Append(@"
+");
+            foreach (DataRow drData in dtMerged.Rows)
+            {
+                if (!string.IsNullOrEmpty(drData[0].ToString()))
+                {
+                    for (int colIdx = 0; colIdx < dtMerged.Columns.Count; colIdx++)
+                    {
+                        sbFinalData.Append("");
+                        sbFinalData.Append(drData[colIdx].ToString());
+                        if (colIdx < dtMerged.Columns.Count - 1)
+                            sbFinalData.Append(",");
+                    }
+
+                    sbFinalData.Append(@"
+");
+                }
+
+            }
+            sw = new StreamWriter(@"C:\test\SIG\new_csv_files\logs\allmetadata.csv");
+            sw.Write(sbFinalData.ToString());
+            sw.Flush();
+            sw.Close();
+
         }
 
     }
