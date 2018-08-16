@@ -1,0 +1,4 @@
+C:\Users\Bassem\Source\Repos\ConsoleApp1\SP-Metadata-CSV-cleanup\ConsoleApp2\bin\x64\Release\ConsoleApp2.exe.config
+C:\Users\Bassem\Source\Repos\ConsoleApp1\SP-Metadata-CSV-cleanup\ConsoleApp2\bin\x64\Release\ConsoleApp2.exe
+C:\Users\Bassem\Source\Repos\ConsoleApp1\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Release\ConsoleApp2.csproj.CoreCompileInputs.cache
+C:\Users\Bassem\Source\Repos\ConsoleApp1\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Release\ConsoleApp2.exe

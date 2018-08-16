@@ -28,7 +28,7 @@ namespace ConsoleApp2
             //object[] columnNames = null;
             StreamReader sr = null;
             Stream stream = null;
-            DirectoryInfo dir = new DirectoryInfo(@"C:\test\SIG\new_csv_files\logs");
+            DirectoryInfo dir = new DirectoryInfo(@"C:\test\coalfire");
 
             foreach (FileInfo f in dir.GetFiles())
             {
@@ -121,7 +121,7 @@ namespace ConsoleApp2
 ");
             }
 
-            StreamWriter sw = new StreamWriter(@"C:\test\SIG\new_csv_files\logs\columns.txt");
+            StreamWriter sw = new StreamWriter(@"C:\test\coalfire\columns.txt");
             sw.Write(sb.ToString());
             sw.Flush();
             sw.Close();
@@ -146,7 +146,7 @@ namespace ConsoleApp2
 ");
             foreach (DataRow drData in dtMerged.Rows)
             {
-                if (!string.IsNullOrEmpty(drData[0].ToString()))
+                if (!string.IsNullOrEmpty(drData[1].ToString()))
                 {
                     for (int colIdx = 0; colIdx < dtMerged.Columns.Count; colIdx++)
                     {
@@ -161,7 +161,7 @@ namespace ConsoleApp2
                 }
 
             }
-            sw = new StreamWriter(@"C:\test\SIG\new_csv_files\logs\allmetadata.csv");
+            sw = new StreamWriter(@"C:\test\coalfire\allmetadata.csv");
             sw.Write(sbFinalData.ToString());
             sw.Flush();
             sw.Close();
