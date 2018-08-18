@@ -28,100 +28,120 @@ namespace ConsoleApp2
             //object[] columnNames = null;
             StreamReader sr = null;
             Stream stream = null;
-            DirectoryInfo dir = new DirectoryInfo(@"C:\test\coalfire");
+
+            string csvOutputFilePath = System.Configuration.ConfigurationSettings.AppSettings["csvOutputFilePath"];
+            string xlsxFilesFolderPath = System.Configuration.ConfigurationSettings.AppSettings["xlsxFilesFolderPath"];
+            string FirstCellHeader = "";
+
+            DirectoryInfo dir = new DirectoryInfo(xlsxFilesFolderPath);
+            int r = 0;
 
             foreach (FileInfo f in dir.GetFiles())
             {
-                Console.WriteLine("processing file " + f.Name);
-                stream = f.OpenText().BaseStream;
-                sr = new StreamReader(stream);
-                while (sr.Peek() >= 0)
+                r = 0;
+                try
                 {
-                    //read a line in the CSV file
-                    line = sr.ReadLine();
-                    if (line.Trim().Length > 0)
+                    Console.WriteLine("Processing file " + f.Name);
+                    stream = f.OpenText().BaseStream;
+                    sr = new StreamReader(stream);
+                    while (sr.Peek() >= 0)
                     {
-                        line = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(line));
-                        // if it is not a header, i.e not start of a new table, add a new row to target
-                        if (!line.StartsWith("SourcePath"))
+                        r++;
+                        //read a line in the CSV file
+                        line = sr.ReadLine();
+                        if (line.Trim().Length > 0)
                         {
-                            if (dt == null)
-                                dt = new DataTable();
-                            dt.Rows.Add(dt.NewRow());
-                        }
-                        else //if it is a header i.e. start of new table
-                        {
-                            // merge with existing table, if it exists
-                            if (dt != null)
-                                dtMerged.Merge(dt, true, MissingSchemaAction.Add);
-                            ht = new Hashtable();
-                            dt = new DataTable();
-
-
-                        }
-
-
-                        sbFileRemoveSpaces.Append(line);
-                        sbFileRemoveSpaces.Append(@"
-");
-                        columns = line.Split(',');
-                        i = 0;
-
-                        foreach (string s in columns)
-                        {
-
-                            if (line.StartsWith("SourcePath"))
+                            line = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(line));
+                            // if it is not a header, i.e not start of a new table, add a new row to target
+                            if (r != 1)//!line.StartsWith("SourcePath"))
                             {
-                                if (dt.Columns.Contains(s) == false)
+                                if (dt == null)
+                                    dt = new DataTable();
+                                dt.Rows.Add(dt.NewRow());
+                            }
+                            else //if it is a header i.e. start of new table
+                            {
+                                // merge with existing table, if it exists
+                                if (dt != null)
+                                    dtMerged.Merge(dt, true, MissingSchemaAction.Add);
+                                ht = new Hashtable();
+                                dt = new DataTable();
+
+                            }
+
+
+                            sbFileRemoveSpaces.Append(line);
+                            sbFileRemoveSpaces.Append(@"
+");
+                            columns = line.Split(',');
+                            i = 0;
+                            for (i = 0; i < columns.Length; i++)
+                            {
+
+                                Console.WriteLine("In Row: " + r.ToString() + " file " + f.Name);
+
+                                var s = columns[i];
+                                if (r == 1)
+                                //line.StartsWith(FirstCellHeader))
                                 {
-                                    dt.Columns.Add(s);
-                                    ht.Add(i, s);
-                                }
-                                else // to solve the problem of columns with same name
-                                {
-                                    if (dt.Columns.Contains(s + i.ToString()) == false)
+                                    if (string.IsNullOrEmpty(s))
+                                        s = "Col" + i.ToString();
+
+                                    if (dt.Columns.Contains(s) == false)
                                     {
-                                        dt.Columns.Add(s + i.ToString());
-                                        ht.Add(i, s + i.ToString());
+                                        dt.Columns.Add(s);
+                                        ht.Add(i, s);
+                                    }
+                                    else // to solve the problem of columns with same name
+                                    {
+                                        if (dt.Columns.Contains(s + i.ToString()) == false)
+                                        {
+                                            dt.Columns.Add(s + i.ToString());
+                                            ht.Add(i, s + i.ToString());
+                                        }
+                                    }
+
+
+                                    if (headers.Contains(s) == false)
+                                    {
+                                        headers.Enqueue(s);
+
+                                        sb.Append(s);
+                                        sb.Append(@"
+");
                                     }
                                 }
 
-
-                                if (headers.Contains(s) == false)
+                                else
                                 {
-                                    headers.Enqueue(s);
+                                    Val = s;
+                                    if (s.IndexOf('#') > 0)
+                                        Val = s.Substring(1 + s.IndexOf('#'));
 
-                                    sb.Append(s);
-                                    sb.Append(@"
-");
+                                    if (i < dt.Columns.Count && !string.IsNullOrEmpty(ht[i].ToString()))
+                                        dt.Rows[dt.Rows.Count - 1][ht[i].ToString()] = Val;//dt.Columns[i].ColumnName
                                 }
+
+                                // i++;
                             }
 
-                            else
-                            {
-                                Val = s;
-                                if (s.IndexOf('#') > 0)
-                                    Val = s.Substring(1 + s.IndexOf('#'));
-
-                                if (i < dt.Columns.Count && !string.IsNullOrEmpty(ht[i].ToString()))
-                                    dt.Rows[dt.Rows.Count - 1][ht[i].ToString()] = Val;//dt.Columns[i].ColumnName
-                            }
-
-                            i++;
                         }
-
                     }
-                }
 
-                stream.Close();
-                sr.BaseStream.Close();
+                    stream.Close();
+                    sr.BaseStream.Close();
 
-                sr.Close();
-                sbFileRemoveSpaces.Append(@"
+                    sr.Close();
+                    sbFileRemoveSpaces.Append(@"
 ");
-            }
 
-            StreamWriter sw = new StreamWriter(@"C:\test\coalfire\columns.txt");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("error: " + e.Message);
+                }
+            }
+            StreamWriter sw = new StreamWriter(csvOutputFilePath + "_columns.txt");
             sw.Write(sb.ToString());
             sw.Flush();
             sw.Close();
@@ -161,13 +181,11 @@ namespace ConsoleApp2
                 }
 
             }
-            sw = new StreamWriter(@"C:\test\coalfire\allmetadata.csv");
+            sw = new StreamWriter(csvOutputFilePath);
             sw.Write(sbFinalData.ToString());
             sw.Flush();
             sw.Close();
-
         }
-
     }
 }
 
