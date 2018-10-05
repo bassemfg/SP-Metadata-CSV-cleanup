@@ -53,7 +53,7 @@ namespace ConsoleApp2
                         {
                             line = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(line));
                             // if it is not a header, i.e not start of a new table, add a new row to target
-                            if (r==1&& !line.StartsWith("SourcePath"))
+                            if (r==1&& !line.StartsWith("ServerRedirectedEmbedUri"))
                             {
                                 Console.WriteLine("Not a metadata file");
                                 sr.ReadToEnd();

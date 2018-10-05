@@ -12,3 +12,10 @@ C:\Users\byacoube\source\repos\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug
 C:\Users\byacoube\source\repos\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug\ConsoleApp2.csproj.CoreCompileInputs.cache
 C:\Users\byacoube\source\repos\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug\ConsoleApp2.exe
 C:\Users\byacoube\source\repos\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug\ConsoleApp2.pdb
+C:\Users\byacoube\Documents\GitHub\SP-Metadata-CSV-cleanup\ConsoleApp2\bin\x64\Debug\ConsoleApp2.exe.config
+C:\Users\byacoube\Documents\GitHub\SP-Metadata-CSV-cleanup\ConsoleApp2\bin\x64\Debug\ConsoleApp2.exe
+C:\Users\byacoube\Documents\GitHub\SP-Metadata-CSV-cleanup\ConsoleApp2\bin\x64\Debug\ConsoleApp2.pdb
+C:\Users\byacoube\Documents\GitHub\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug\ConsoleApp2.csprojAssemblyReference.cache
+C:\Users\byacoube\Documents\GitHub\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug\ConsoleApp2.csproj.CoreCompileInputs.cache
+C:\Users\byacoube\Documents\GitHub\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug\ConsoleApp2.exe
+C:\Users\byacoube\Documents\GitHub\SP-Metadata-CSV-cleanup\ConsoleApp2\obj\x64\Debug\ConsoleApp2.pdb
