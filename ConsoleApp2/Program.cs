@@ -59,7 +59,7 @@ namespace ConsoleApp2
                                 sr.ReadToEnd();
                                 break;
                             }
-                            if (r != 1)//!line.StartsWith("SourcePath"))
+                            if (r != 1)//! line.StartsWith("SourcePath"))
                             {
                                 if (dt == null)
                                     dt = new DataTable();
@@ -68,9 +68,7 @@ namespace ConsoleApp2
                             else //if it is a header i.e. start of new table
                             {
                                 // merge with existing table, if it exists
-                                if (dt != null)
-                                    dtMerged.Merge(dt, true, MissingSchemaAction.Add);
-                                ht = new Hashtable();
+                                 ht = new Hashtable();
                                 dt = new DataTable();
 
                             }
@@ -96,14 +94,14 @@ namespace ConsoleApp2
                                     if (dt.Columns.Contains(s) == false)
                                     {
                                         dt.Columns.Add(s);
-                                        ht.Add(i, s);
+                                        
                                     }
                                     else // to solve the problem of columns with same name
                                     {
                                         if (dt.Columns.Contains(s + i.ToString()) == false)
                                         {
                                             dt.Columns.Add(s + i.ToString());
-                                            ht.Add(i, s + i.ToString());
+                                     
                                         }
                                     }
 
@@ -121,11 +119,6 @@ namespace ConsoleApp2
                                 else
                                 {
                                     Val = s;
-                                    if (s.IndexOf('#') > 0)
-                                        Val = s.Substring(1 + s.IndexOf('#'));
-
-                                    if (i < dt.Columns.Count && !string.IsNullOrEmpty(ht[i].ToString()))
-                                        dt.Rows[dt.Rows.Count - 1][ht[i].ToString()] = Val;//dt.Columns[i].ColumnName
                                 }
 
                                 // i++;
@@ -145,6 +138,7 @@ namespace ConsoleApp2
                 catch (Exception e)
                 {
                     Console.WriteLine("error: " + e.Message);
+                    System.Diagnostics.EventLog.WriteEntry("SP-CSV-Cleanup", e.Message, System.Diagnostics.EventLogEntryType.Error, 123);
                 }
             }
             StreamWriter sw = new StreamWriter(csvOutputFilePath + "_columns.txt");
