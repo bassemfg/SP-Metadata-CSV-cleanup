@@ -11,11 +11,56 @@ namespace ConsoleApp2
 {
     class Program
     {
+        public static DataTable ConvertCSVtoDataTable(string strFilePath)
+        {
+            DataTable dt = new DataTable();
+            using (StreamReader sr = new StreamReader(strFilePath))
+            {
+
+
+                string colName;
+                int j = 0;
+                string[] headers = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(sr.ReadLine())).Split(',');
+                foreach (string header in headers)
+                {
+                    j++;
+                    colName = header;
+                    if (string.IsNullOrEmpty(header))
+                        colName = "col" + j.ToString();
+
+                    if (dt.Columns.Contains(header))
+                        colName = header + j.ToString();
+
+                    dt.Columns.Add(colName);
+                }
+                while (!sr.EndOfStream)
+                {
+                    string[] rows = sr.ReadLine().Trim().Split(',');
+                    DataRow dr = dt.NewRow();
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(rows[i]))
+                                dr[i] = rows[i].Replace("$^*", ",");
+                        }
+                        catch { }
+                    }
+
+                    if (!dr.HasErrors)//&& !dr.IsNull("FileRef"))
+                        dt.Rows.Add(dr);
+                }
+
+            }
+
+
+            return dt;
+        }
+
         static void Main(string[] args)
         {
 
             int i = 0;
-            string Val = "";
             DataTable dt = null;
             DataTable dtMerged = new DataTable("Metadata");
             DataRow dr = null;
@@ -23,16 +68,15 @@ namespace ConsoleApp2
             Queue headers = new Queue();
             StringBuilder sb = new StringBuilder();
             StringBuilder sbFileRemoveSpaces = new StringBuilder();
-            String[] columns = null;
             string line = "";
             //object[] columnNames = null;
             StreamReader sr = null;
             Stream stream = null;
+            var VerifyOnly = true;
 
             string csvOutputFilePath = System.Configuration.ConfigurationSettings.AppSettings["csvOutputFilePath"];
             string xlsxFilesFolderPath = System.Configuration.ConfigurationSettings.AppSettings["xlsxFilesFolderPath"];
-            string FirstCellHeader = "";
-
+            
             DirectoryInfo dir = new DirectoryInfo(xlsxFilesFolderPath);
             int r = 0;
 
@@ -42,97 +86,69 @@ namespace ConsoleApp2
                 try
                 {
                     Console.WriteLine("Processing file " + f.Name);
-                    stream = f.OpenText().BaseStream;
-                    sr = new StreamReader(stream);
-                    while (sr.Peek() >= 0)
+
+                    if (VerifyOnly)
                     {
-                        r++;
-                        //read a line in the CSV file
-                        line = sr.ReadLine();
-                        if (line.Trim().Length > 0)
+                        dt = ConvertCSVtoDataTable(f.FullName);
+                        if (string.IsNullOrEmpty(dt.Rows[0]["UniqueId"].ToString()))
                         {
-                            line = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(line));
-                            // if it is not a header, i.e not start of a new table, add a new row to target
-                            if (r==1&& !line.StartsWith("ServerRedirectedEmbedUri"))
-                            {
-                                Console.WriteLine("Not a metadata file");
-                                sr.ReadToEnd();
-                                break;
-                            }
-                            if (r != 1)//! line.StartsWith("SourcePath"))
-                            {
-                                if (dt == null)
-                                    dt = new DataTable();
-                                dt.Rows.Add(dt.NewRow());
-                            }
-                            else //if it is a header i.e. start of new table
-                            {
-                                // merge with existing table, if it exists
-                                 ht = new Hashtable();
-                                dt = new DataTable();
-
-                            }
-
-
-                            sbFileRemoveSpaces.Append(line);
-                            sbFileRemoveSpaces.Append(@"
-");
-                            columns = line.Split(',');
-                            i = 0;
-                            for (i = 0; i < columns.Length; i++)
-                            {
-
-                                Console.WriteLine("In Row: " + r.ToString() + " file " + f.Name);
-
-                                var s = columns[i];
-                                if (r == 1)
-                                //line.StartsWith(FirstCellHeader))
-                                {
-                                    if (string.IsNullOrEmpty(s))
-                                        s = "Col" + i.ToString();
-
-                                    if (dt.Columns.Contains(s) == false)
-                                    {
-                                        dt.Columns.Add(s);
-                                        
-                                    }
-                                    else // to solve the problem of columns with same name
-                                    {
-                                        if (dt.Columns.Contains(s + i.ToString()) == false)
-                                        {
-                                            dt.Columns.Add(s + i.ToString());
-                                     
-                                        }
-                                    }
-
-
-                                    if (headers.Contains(s) == false)
-                                    {
-                                        headers.Enqueue(s);
-
-                                        sb.Append(s);
-                                        sb.Append(@"
-");
-                                    }
-                                }
-
-                                else
-                                {
-                                    Val = s;
-                                }
-
-                                // i++;
-                            }
-
+                            Console.WriteLine("No file uniqueid");
+                            
                         }
+                        else
+                        { try { Guid g = new Guid(dt.Rows[0]["UniqueId"].ToString()); }
+                            catch {
+                                Console.WriteLine("No file uniqueid");
+                            
+                            }
+                        }
+                            
+                        
                     }
+                    else
+                    {
+                        stream = f.OpenText().BaseStream;
+                        sr = new StreamReader(stream);
+                        while (sr.Peek() >= 0)
+                        {
+                            r++;
+                            //read a line in the CSV file
+                            line = sr.ReadLine();
+                            if (line.Trim().Length > 0)
+                            {
+                                //line = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(line));
+                                // if it is not a header, i.e not start of a new table, add a new row to target
+                                if (r == 1 && !line.StartsWith("ServerRedirectedEmbedUri"))
+                                {
+                                    Console.WriteLine("Not a metadata file");
+                                    break;
+                                }
 
-                    stream.Close();
-                    sr.BaseStream.Close();
+                                if (r == 1 && line.StartsWith("ServerRedirectedEmbedUri"))
+                                    sb = new StringBuilder();
 
-                    sr.Close();
-                    sbFileRemoveSpaces.Append(@"
+                                if (r > 1 && line.StartsWith("ServerRedirectedEmbedUri"))
+                                {
+                                    SaveFile(f.FullName, sb.ToString());
+                                    sb = new StringBuilder();
+                                }
+
+                                sb.Append(line);
+                                sb.Append(@"
 ");
+                            }
+
+
+                            Console.WriteLine("In Row: " + r.ToString() + " file " + f.Name);
+                        }
+
+                        SaveFile(f.FullName, sb.ToString());
+
+                        stream.Close();
+                        sr.BaseStream.Close();
+
+                        sr.Close();
+                    }
 
                 }
                 catch (Exception e)
@@ -141,50 +157,17 @@ namespace ConsoleApp2
                     System.Diagnostics.EventLog.WriteEntry("SP-CSV-Cleanup", e.Message, System.Diagnostics.EventLogEntryType.Error, 123);
                 }
             }
-            StreamWriter sw = new StreamWriter(csvOutputFilePath + "_columns.txt");
-            sw.Write(sb.ToString());
+        }
+
+        static void SaveFile(string filename, string contents)
+        {
+
+
+            StreamWriter sw = new StreamWriter(filename + DateTime.Now.ToFileTimeUtc().ToString() + @".csv");
+            sw.Write(contents);
             sw.Flush();
             sw.Close();
-            /*
-                        sw = new StreamWriter(@"c:\test\allmetadata.csv");
-                        sw.Write(sbFileRemoveSpaces.ToString());
-                        sw.Flush();
-                        sw.Close();
-                        */
-            //dtMerged.WriteXml(@"C:\test\SIG\new_csv_files\logs\allmetadata.xml");
-            Console.WriteLine("writing results file ");
-            StringBuilder sbFinalData = new StringBuilder();
-            for (int colIdx = 0; colIdx < dtMerged.Columns.Count; colIdx++)
-            {
-                sbFinalData.Append("");
-                sbFinalData.Append(dtMerged.Columns[colIdx].ColumnName);
-                if (colIdx < dtMerged.Columns.Count - 1)
-                    sbFinalData.Append(",");
-            }
-
-            sbFinalData.Append(@"
-");
-            foreach (DataRow drData in dtMerged.Rows)
-            {
-                if (!string.IsNullOrEmpty(drData[1].ToString()))
-                {
-                    for (int colIdx = 0; colIdx < dtMerged.Columns.Count; colIdx++)
-                    {
-                        sbFinalData.Append("");
-                        sbFinalData.Append(drData[colIdx].ToString());
-                        if (colIdx < dtMerged.Columns.Count - 1)
-                            sbFinalData.Append(",");
-                    }
-
-                    sbFinalData.Append(@"
-");
-                }
-
-            }
-            sw = new StreamWriter(csvOutputFilePath);
-            sw.Write(sbFinalData.ToString());
-            sw.Flush();
-            sw.Close();
+            
         }
     }
 }
